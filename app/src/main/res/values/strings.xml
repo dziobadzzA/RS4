@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">myFirstTaskRSscholl</string>
+    <string name="textview">TextView</string>
+    <string name="arrayname">name</string>
+    <string-array name="arrayname">
+        <item>name</item>
+        <item>firname</item>
+        <item>number</item>
+    </string-array>
+    <string name="preferencename">settings filter database</string>
+    <dimen name="heightsize">50dp</dimen>
+    <dimen name="weightsize">250dp</dimen>
+    <string name="edittextname">name</string>
+    <string name="edittextfirname">firname</string>
+    <string name="edittextnumber">number</string>
+    <string name="labeladd">Add database</string>
+    <string name="labelfilter">Filter database</string>
+</resources>
