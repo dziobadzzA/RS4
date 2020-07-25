@@ -5,13 +5,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import coil.api.load
 import com.example.cattaskapp.CatApiImpl
 import com.example.cattaskapp.R
 import com.example.cattaskapp.data.Cat
-
 import kotlinx.android.synthetic.main.layout_item.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class CatAdapter : RecyclerView.Adapter<CatViewHolder>() {
 
@@ -42,13 +46,26 @@ class CatAdapter : RecyclerView.Adapter<CatViewHolder>() {
         var layoutPosition = holder.layoutPosition;
         if (layoutPosition == items.size - 1)
         {
-          //newaddItems()
+            GlobalScope.launch (Dispatchers.Main)
+            {
+                newaddItems()
+            }
         }
     }
 
-     suspend fun newaddItems() {
-        items.addAll(CatApiImpl.updateListOfCats())
-        notifyDataSetChanged()
+    suspend fun newaddItems() {
+
+        val _itemsnew = MutableLiveData<List<Cat>>()
+        val itemsnew: LiveData<List<Cat>> = _itemsnew
+        _itemsnew.value = CatApiImpl.getListOfCats()
+
+        var buf: List<Cat> = itemsnew.value!!
+
+        if (buf != null) {
+            items.addAll(buf)
+            notifyDataSetChanged()
+        }
+
     }
 
 }
@@ -64,4 +81,3 @@ class  CatViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         imageView.tag = imageUrl
     }
 }
-
