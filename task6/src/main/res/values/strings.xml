@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">RSSChannelApp</string>
+    <string name="nameFrag">Information</string>
+    <dimen name="maxapp">200dp</dimen>
+    <dimen name="minhapp">100dp</dimen>
+    <string name="preferencename">Theme application</string>
+    <string name="preferencenameSourse">Sourse application</string>
+    <string-array name="arrayname">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="arraySourse">
+        <item>XML</item>
+        <item>JSON</item>
+    </string-array>
+</resources>
