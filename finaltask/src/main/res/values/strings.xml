@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">SatApp</string>
+    <string name="back">#1E90FF</string>
+    <string name="backDark">#00BFFF</string>
+    <string name="preferencename">Theme application</string>
+    <string name="preferencesortir">Sortir satellite</string>
+    <string name="preferencenameLogin">Email user</string>
+    <string name="Email">E-mail</string>
+    <string name="Password">Password</string>
+    <string-array name="arrayname">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="arraysortir">
+        <item>name</item>
+        <item>point</item>
+    </string-array>
+    <string name="title_activity_login">LoginApp</string>
+    <string name="title_activity_pageractiv">PageApp</string>
+    <string name="tab_text_1">beacon</string>
+    <string name="tab_text_2">TV</string>
+    <string name="tab_text_3">TTX</string>
+    <string name="tab_text_4">nameSat</string>
+    <string name="tab_text_5">video</string>
+    <string name="tab_text_6">coverage</string>
+</resources>
