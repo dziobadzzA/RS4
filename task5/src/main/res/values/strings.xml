@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">CatTaskApp</string>
-    <dimen name="maxapp">200dp</dimen>
-    <dimen name="minhapp">100dp</dimen>
-</resources>

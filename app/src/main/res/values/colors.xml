@@ -4,5 +4,6 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorAccent">#D81B60</color>
     <color name="screenBackground">#FFFFFF</color>
-    <color name="buttoncolor">#FF3F8C43</color>
+    <color name="button_color">#FF3F8C43</color>
+    <color name="childBackgroundColor">#5BDA61</color>
 </resources>

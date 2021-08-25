@@ -3,9 +3,9 @@
 
     <ListPreference
         android:defaultValue="1"
-        android:entries="@array/arrayname"
-        android:entryValues="@array/arrayname"
+        android:entries="@array/array_name"
+        android:entryValues="@array/array_name"
         android:key="otbor"
-        android:title="@string/preferencename" />
+        android:title="@string/preference_name" />
 
 </PreferenceScreen>

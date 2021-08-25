@@ -1,18 +1,20 @@
 <resources>
-    <string name="app_name">myFirstTaskRSscholl</string>
-    <string name="textview">TextView</string>
-    <string name="arrayname">name</string>
-    <string-array name="arrayname">
+    <string name="app_name">Database for Mentor</string>
+    <string name="textview">text</string>
+    <string name="array_name">name</string>
+    <string-array name="array_name">
         <item>name</item>
-        <item>firname</item>
-        <item>number</item>
+        <item>firstname</item>
+        <item>phone</item>
     </string-array>
-    <string name="preferencename">settings filter database</string>
-    <dimen name="heightsize">50dp</dimen>
-    <dimen name="weightsize">250dp</dimen>
-    <string name="edittextname">name</string>
-    <string name="edittextfirname">firname</string>
-    <string name="edittextnumber">number</string>
-    <string name="labeladd">Add database</string>
-    <string name="labelfilter">Filter database</string>
+    <string name="preference_name">settings filter for database</string>
+    <dimen name="height_size">50dp</dimen>
+    <dimen name="weight_size">250dp</dimen>
+    <string name="edit_text_name">name</string>
+    <string name="edit_text_firstname">firstname</string>
+    <string name="edit_text_number">phone</string>
+    <string name="label_add">Add database</string>
+    <string name="label_filter">Filter database</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

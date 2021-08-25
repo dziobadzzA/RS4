@@ -6,43 +6,59 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myfirstapplication.database.MentorDatabase
+import com.example.myfirstapplication.model.Mentor
 
 
-internal class DataAdapter(context: Context?, private val mentor: List<Mentor>): RecyclerView.Adapter<DataAdapter.ViewHolder>()
-{
-    private val inflater: LayoutInflater
+class DataAdapter(context: Context?): RecyclerView.Adapter<DataAdapter.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder
-    {
-        val view = inflater.inflate(R.layout.list_item, parent, false)
-        return ViewHolder(view)
+    private val mentor: MutableList<MentorDatabase>? = mutableListOf()
+    private val inflater: LayoutInflater = LayoutInflater.from(context)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder(inflater.inflate(R.layout.list_item, parent, false))
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int)
-    {
-        val mentor = mentor[position]
-        holder.nameView.setText(mentor.getName())
-        holder.firnameView.setText(mentor.getFirname())
-        holder.numberView.setText(mentor.getNumber())
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val mentor = mentor?.get(position)
+        holder.nameView.text = "Name: " +  mentor?.name ?: ""
+        holder.firstnameView.text = "FirstName: " +mentor?.firstname ?: ""
+        holder.numberView.text = "Phone: " + mentor?.number ?: ""
     }
 
     override fun getItemCount(): Int {
-        return mentor.size
+        return mentor?.size ?: 0
     }
 
-    inner class ViewHolder internal constructor(view: View): RecyclerView.ViewHolder(view)
-    {
-        val nameView: TextView
-        val firnameView: TextView
-        val numberView: TextView
-
-        init
-        {
-            nameView = view.findViewById<View>(R.id.name) as TextView
-            firnameView = view.findViewById<View>(R.id.firname) as TextView
-            numberView = view.findViewById<View>(R.id.number) as TextView
-        }
+    inner class ViewHolder internal constructor(view: View): RecyclerView.ViewHolder(view) {
+        val nameView: TextView = (view.findViewById<View>(R.id.name) as TextView?)!!
+        val firstnameView: TextView = (view.findViewById<View>(R.id.firstname) as TextView?)!!
+        val numberView: TextView = (view.findViewById<View>(R.id.number) as TextView?)!!
     }
 
-    init { inflater = LayoutInflater.from(context) }
+    fun addItems(item:MentorDatabase) {
+        mentor?.add(item)
+        notifyDataSetChanged()
+    }
+
+    fun deleteItems() = mentor?.clear()
+
+    fun addItemsAll(items: List<MentorDatabase>) {
+        mentor?.addAll(items)
+        notifyDataSetChanged()
+    }
+
+    fun deleteItem(p:Int) {
+        mentor?.removeAt(p)
+        notifyDataSetChanged()
+    }
+
+    fun getItem(position: Int): MentorDatabase? {
+        return mentor?.get(position)
+    }
+
+}
+
+interface SwipeDelete {
+    fun deleteItem(position: Int)
 }

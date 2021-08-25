@@ -1,103 +1,164 @@
 package com.example.myfirstapplication
 
-import android.content.Context
-import android.content.Intent
-import android.database.Cursor
-import  android.database.sqlite.SQLiteDatabase
+
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myfirstapplication.database.DatabaseSql
+import com.example.myfirstapplication.databinding.ActivityMainBinding
+import com.example.myfirstapplication.model.AddMentor
+import com.example.myfirstapplication.model.Mentor
+import com.example.myfirstapplication.model.State
+import com.example.myfirstapplication.screens.add.SwipeList
 
-@Suppress("RedundantOverride", "DEPRECATION")
 
-class MainActivity : AppCompatActivity()
-{
+class MainActivity : AppCompatActivity(), AddMentor, SwipeDelete {
 
-    companion object
-    {
-        const val FILTER = "FILTER"
-    }
+    private var _binding: ActivityMainBinding? = null
+    private val binding get() = _binding!!
 
-    var sortir: String? = "name"
-    var mentors: MutableList<Mentor> =  mutableListOf()
+    private lateinit var viewModel: MainViewModel
+    private var adapter:DataAdapter? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_main)
+         _binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-    }
+        val application = requireNotNull(this).application
 
+        viewModel =
+         ViewModelProvider(
+              this, MainViewModelFactory(DatabaseSql.getInstance(application), application)).get(MainViewModel::class.java)
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString("FILTER", sortir)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        sortir = savedInstanceState.get("FILTER").toString()
-    }
-
-    fun addatabase(view: View)
-    {
-       var intent = Intent(this, addatabase::class.java)
-       startActivity(intent)
-    }
-
-    fun filt(view: View)
-    {
-        var intent = Intent(this, filter::class.java)
-        startActivity(intent)
-    }
-
-    private fun setInitialData()
-    {
-        mentors.clear()
-
-        var db: SQLiteDatabase = baseContext.openOrCreateDatabase("app.db", Context.MODE_PRIVATE, null)
-        db.execSQL("CREATE TABLE IF NOT EXISTS users (name TEXT, firname TEXT, number TEXT)");
-
-        var query: Cursor = db.rawQuery("SELECT * FROM users ORDER BY $sortir;", null)
-
-        if (query.moveToFirst())
-        {
-            var index = 0
-            do
-            {
-                val name: String? = query.getString(0)
-                val firname: String? = query.getString(1)
-                val number: String? = query.getString(2)
-
-                var addMonic: Mentor = Mentor().also {
-                    it.Mentor(name, firname, number)
-                }
-
-                mentors.add(index, addMonic)
-                index++
-
-            } while (query.moveToNext())
+        binding.floatingActionButton.setOnClickListener{
+            runOpenFragment(viewModel.fragmentAddDatabase, viewModel.addFragment)
+            viewModel.addFragment.active = true
+            workButton(false)
         }
 
-        query.close()
-        db.close()
+        binding.imageButton.setOnClickListener {
+           runOpenFragment(viewModel.fragmentFilterFragment, viewModel.filterFragment)
+           viewModel.filterFragment.active = true
+           workButton(false)
+        }
+
+        adapter =  DataAdapter(this)
+        binding.list.adapter = adapter
+
+        val swipeToDeleteCallBack = object : SwipeList() {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                super.onSwiped(viewHolder, direction)
+                val position = viewHolder.adapterPosition
+                deleteItem(position)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallBack)
+        itemTouchHelper.attachToRecyclerView(binding.list)
+
+        if (viewModel.addFragment.active){
+            workButton(false)
+        }
+        else if (viewModel.filterFragment.active){
+            workButton(false)
+        }
+
+        viewModel.mentors?.observe(this, Observer {
+            adapter?.deleteItems()
+            viewModel.mentors?.value?.let {
+                adapter?.addItemsAll(it.toList())
+            }
+
+        })
+
     }
 
-    override fun onResume()
-    {
-        var prefx = PreferenceManager.getDefaultSharedPreferences(this)
-        sortir= prefx.getString("otbor", "name")
 
-        setInitialData()
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
 
-        val recyclerView: RecyclerView = findViewById(R.id.list)
-        val adapter = DataAdapter(this, mentors)
-        recyclerView.adapter = adapter
+    private fun runOpenFragment(fragment: Fragment, state: State) {
 
-        super.onResume()
+        val fragmentTr: FragmentTransaction = supportFragmentManager.beginTransaction()
+
+        if (!state.checkState()) {
+            fragmentTr.add(R.id.container, fragment, state.name)
+            state.updateState()
+        }
+        if (state.checkState()) {
+            fragmentTr.replace(R.id.container, fragment, state.name)
+        }
+
+        fragmentTr.commit()
+    }
+
+    override fun onBackPressed() {
+        backWork()
+    }
+
+    private fun workButton(state:Boolean){
+        binding.floatingActionButton.isVisible = state
+        binding.floatingActionButton.isClickable = state
+        binding.imageButton.isVisible = state
+        binding.imageButton.isClickable = state
+        binding.list.isVisible = state
+        binding.list.isClickable = state
+    }
+
+    private fun backWork(){
+
+        var work = true
+        val fragmentTr: FragmentTransaction = supportFragmentManager.beginTransaction()
+
+        when {
+
+            viewModel.addFragment.active -> {
+                fragmentTr.remove(supportFragmentManager.fragments[0])
+                viewModel.addFragment.active = false
+            }
+            viewModel.filterFragment.active -> {
+                fragmentTr.remove(supportFragmentManager.fragments[0])
+                viewModel.filterFragment.active = false
+                viewModel.updateSortType()
+            }
+            else -> {
+                work = false
+            }
+
+        }
+
+        if (work){
+            fragmentTr.addToBackStack(null)
+            fragmentTr.commit()
+        }
+
+
+        workButton(true)
+
+    }
+
+    override fun addMentor(mentor: Mentor) {
+        backWork()
+        viewModel.insert(mentor)
+        val temp = viewModel.convertToDatabase(mentor)
+        temp.Id = viewModel.indexses + 1
+        adapter?.addItems(temp)
+    }
+
+     override fun deleteItem(position:Int) {
+         val temp = adapter?.getItem(position)
+         temp?.let { viewModel.clearMentor(it) }
+         adapter?.deleteItem(position)
     }
 
 
