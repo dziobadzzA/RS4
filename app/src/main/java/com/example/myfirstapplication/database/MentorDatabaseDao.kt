@@ -1,6 +1,5 @@
 package com.example.myfirstapplication.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -20,6 +19,9 @@ interface MentorDatabaseDao {
          @Query("DELETE FROM Mentor")
          suspend fun clearAll()
 
+         @Query("UPDATE Mentor SET name = :name, firstname = :firstname, phone = :phone WHERE Id = :key")
+         suspend fun update(name: String, firstname:String, phone:String, key: Long)
+
          @Query("SELECT * from Mentor ORDER BY phone")
          suspend fun getAllPhone(): List<MentorDatabase>
 
@@ -31,5 +33,4 @@ interface MentorDatabaseDao {
 
          @Query("SELECT MAX(Id) FROM Mentor")
          suspend fun getLastIndex(): Long
-
 }

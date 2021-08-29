@@ -1,6 +1,9 @@
 package com.example.myfirstapplication
 
 import android.app.Application
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.preference.PreferenceManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,6 +36,8 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
     private var _mentors: MutableLiveData<MutableList<MentorDatabase>>? = null
     val mentors: LiveData<MutableList<MentorDatabase>>? get() = _mentors
 
+    var typeDatabase: String = ""
+
     init {
         _sortype?.value = "name"
         _sortype = MutableLiveData<String>()
@@ -40,9 +45,11 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
         fragmentAddDatabase = AddDatabaseFragment()
         fragmentFilterFragment = FilterPreferenceFragment()
         updateSortType()
+
         viewModelScope.launch {
             indexses = databaseDAO.getLastIndex()
         }
+
     }
 
 
@@ -50,19 +57,27 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
 
         viewModelScope.launch {
 
-            val prefx = PreferenceManager.getDefaultSharedPreferences(application)
-            _sortype?.value = prefx.getString("otbor", "name")
+            val pref = PreferenceManager.getDefaultSharedPreferences(application)
+            _sortype?.value = pref.getString("otbor", "name")
+
+            typeDatabase = pref.getString("db", "room").toString()
 
             viewModelScope.launch {
 
-                when (_sortype?.value) {
+                if (typeDatabase == "room") {
+                    when (_sortype?.value) {
 
-                    "name" -> _mentors?.value = databaseDAO.getAllName().toMutableList()
+                        "name" -> _mentors?.value = databaseDAO.getAllName().toMutableList()
 
-                    "firstname" -> _mentors?.value = databaseDAO.getAllFirstName().toMutableList()
+                        "firstname" -> _mentors?.value = databaseDAO.getAllFirstName().toMutableList()
 
-                    "phone" -> _mentors?.value = databaseDAO.getAllPhone().toMutableList()
+                        "phone" -> _mentors?.value = databaseDAO.getAllPhone().toMutableList()
+                    }
                 }
+                else {
+                    _mentors?.value =  _sortype?.value?.let { getSortType(it) }
+                }
+
             }
 
         }
@@ -75,11 +90,17 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
              val tempMentor = convertToDatabase(mentor)
              tempMentor.Id = ++indexses
              _mentors?.value?.add(tempMentor)
-             databaseDAO.insert(tempMentor)
+
+             if (typeDatabase == "room"){
+                 databaseDAO.insert(tempMentor)
+             }
+             else{
+                addCursorItem(tempMentor)
+             }
+
+
          }
     }
-
-
 
     fun get(key: Long) {
         viewModelScope.launch {
@@ -87,11 +108,42 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
         }
     }
 
+
+    fun updateMentor(mentor: Mentor){
+
+        val id = getUnique(mentor)
+
+        viewModelScope.launch {
+
+                if (id != null) {
+                    id.number = mentor.number.toString()
+
+                    if (typeDatabase == "room"){
+                        databaseDAO.update(mentor.name!!, mentor.firstname!!, mentor.number!!, id.Id)
+                    }
+                    else{
+                        updateCursorItem(convertToDatabase(mentor), id.Id)
+                    }
+
+
+                }
+
+            }
+
+    }
+
     fun clearMentor(mentor: MentorDatabase) {
 
         viewModelScope.launch {
             _mentors?.value?.remove(mentor)
-            databaseDAO.clearMentor(mentor.Id)
+
+            if (typeDatabase == "room") {
+                databaseDAO.clearMentor(mentor.Id)
+            }
+            else {
+                clearCursorItem(mentor.Id)
+            }
+
         }
 
     }
@@ -116,7 +168,7 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
         return list.toList()
      }
 
-    fun convertToDatabase(mentor: Mentor): MentorDatabase {
+     fun convertToDatabase(mentor: Mentor): MentorDatabase {
 
         val mentorDatabase = MentorDatabase()
 
@@ -137,6 +189,65 @@ class MainViewModel(database: DatabaseSql, app: Application): ViewModel() {
 
         return mentorDatabase
     }
+
+     private fun getSortType(typeSort:String): MutableList<MentorDatabase> {
+
+         val db: SQLiteDatabase = application.applicationContext.openOrCreateDatabase("Mentor", Context.MODE_PRIVATE,  null)
+         val query: Cursor = db.rawQuery("SELECT * FROM Mentor ORDER BY $typeSort;", null)
+
+         val result: MutableList<MentorDatabase> = mutableListOf()
+
+         if (query.moveToFirst()) {
+
+             do {
+
+                 val selectMentorDatabase = MentorDatabase()
+                 val id: Long = query.getLong(0)
+                 val name: String? = query.getString(1)
+                 val firstname: String? = query.getString(2)
+                 val number: String? = query.getString(3)
+
+                 selectMentorDatabase.Id = id
+                 selectMentorDatabase.name = name.orEmpty()
+                 selectMentorDatabase.firstname = firstname.orEmpty()
+                 selectMentorDatabase.number = number.orEmpty()
+                 result.add(selectMentorDatabase)
+
+
+             } while (query.moveToNext())
+         }
+
+         query.close()
+         db.close()
+
+         return result
+     }
+
+     private fun addCursorItem(mentor: MentorDatabase) {
+         val db: SQLiteDatabase = application.applicationContext.openOrCreateDatabase("Mentor", Context.MODE_PRIVATE,  null)
+         db.execSQL("INSERT INTO Mentor VALUES ('${mentor.Id}', '${mentor.name}', '${mentor.firstname}', '${mentor.number}');")
+         db.close()
+     }
+
+     private fun updateCursorItem(mentor: MentorDatabase, id:Long) {
+        val db: SQLiteDatabase = application.applicationContext.openOrCreateDatabase("Mentor", Context.MODE_PRIVATE,  null)
+        db.execSQL("UPDATE Mentor SET name = '${mentor.name}', firstname = '${mentor.firstname}', phone = '${mentor.number}' WHERE Id = '$id'")
+        db.close()
+     }
+
+     private fun clearCursorItem(id:Long) {
+        val db: SQLiteDatabase = application.applicationContext.openOrCreateDatabase("Mentor", Context.MODE_PRIVATE,  null)
+        db.execSQL("DELETE FROM Mentor WHERE Id = '$id'")
+        db.close()
+     }
+
+     fun getUnique(mentor: Mentor):MentorDatabase? {
+
+         return _mentors?.value?.toMutableList()?.find {
+             (it.name == mentor.name) and
+                     (it.firstname == mentor.firstname)
+         }
+     }
 
 
 }

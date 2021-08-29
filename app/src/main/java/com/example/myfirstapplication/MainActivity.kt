@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myfirstapplication.database.DatabaseSql
+import com.example.myfirstapplication.database.MentorDatabase
 import com.example.myfirstapplication.databinding.ActivityMainBinding
 import com.example.myfirstapplication.model.AddMentor
 import com.example.myfirstapplication.model.Mentor
@@ -152,10 +153,22 @@ class MainActivity : AppCompatActivity(), AddMentor, SwipeDelete {
         viewModel.insert(mentor)
         val temp = viewModel.convertToDatabase(mentor)
         temp.Id = viewModel.indexses + 1
-        adapter?.addItems(temp)
+        // adapter?.addItems(temp)
+        viewModel.updateSortType()
+        adapter?.notifyDataSetChanged()
     }
 
-     override fun deleteItem(position:Int) {
+    override fun updateMentor(mentor: Mentor) {
+        backWork()
+        viewModel.updateMentor(mentor)
+        adapter?.notifyDataSetChanged()
+    }
+
+    override fun getUnique(mentor: Mentor):MentorDatabase? {
+        return viewModel.getUnique(mentor)
+    }
+
+    override fun deleteItem(position:Int) {
          val temp = adapter?.getItem(position)
          temp?.let { viewModel.clearMentor(it) }
          adapter?.deleteItem(position)

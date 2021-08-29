@@ -8,4 +8,11 @@
         android:key="otbor"
         android:title="@string/preference_name" />
 
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/db"
+        android:entryValues="@array/db"
+        android:key="db"
+        android:title="type Database" />
+
 </PreferenceScreen>

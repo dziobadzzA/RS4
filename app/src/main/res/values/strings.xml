@@ -7,6 +7,10 @@
         <item>firstname</item>
         <item>phone</item>
     </string-array>
+    <string-array name="db">
+        <item>room</item>
+        <item>cursor</item>
+    </string-array>
     <string name="preference_name">settings filter for database</string>
     <dimen name="height_size">50dp</dimen>
     <dimen name="weight_size">250dp</dimen>
@@ -17,4 +21,5 @@
     <string name="label_filter">Filter database</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="help_text">Обновить можно у пользователя ТОЛЬКО номер телефона</string>
 </resources>

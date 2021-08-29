@@ -2,6 +2,7 @@ package com.example.myfirstapplication.screens.add
 
 import android.content.Context
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,8 +31,19 @@ class AddDatabaseFragment : Fragment() {
 
         _binding = inflate(inflater, container, false)
         viewModel = ViewModelProvider(this, AddDatabaseViewModelFactory()).get(AddDatabaseFragmentViewModel::class.java)
-        binding.button.setOnClickListener{
-            addItem()
+        binding.button.setOnClickListener {
+
+            if (addMentor.getUnique(getMentor()) == null) {
+                addItem()
+            }
+            else {
+                showMessage("Пользователь уже существует")
+            }
+
+        }
+
+        binding.update.setOnClickListener {
+            updateItem()
         }
 
         return binding.root
@@ -39,17 +51,27 @@ class AddDatabaseFragment : Fragment() {
 
 
     private fun addItem() {
+        addMentor.addMentor(getMentor())
+        updateState()
+    }
 
-        val  mentor = Mentor()
+    private fun updateItem() {
+        addMentor.updateMentor(getMentor())
+        updateState()
+    }
+
+    private fun getMentor(): Mentor {
+        val mentor = Mentor()
         mentor.name = binding.name.text.toString()
         mentor.firstname =  binding.firstname.text.toString()
         mentor.number = "+" + binding.number.text.toString()
-        addMentor.addMentor(mentor)
+        return mentor
+    }
 
+    private fun updateState(){
         binding.name.setText("")
         binding.firstname.setText("")
         binding.number.setText("")
-
     }
 
     override fun onAttach(context: Context) {
@@ -63,6 +85,12 @@ class AddDatabaseFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    fun showMessage(text:String) {
+        val toast = Toast.makeText(context, text, Toast.LENGTH_SHORT)
+        toast.setGravity(Gravity.CENTER_HORIZONTAL, Gravity.CENTER_VERTICAL, Gravity.CENTER)
+        toast.show()
     }
 
 }
